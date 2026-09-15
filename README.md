@@ -51,6 +51,8 @@ python jarvis/main.py
 
 ---
 
+Here is the updated section formatted to match your requested layout exactly:
+
 ## 🧠 Model Compatibility & Selection
 
 J.A.R.V.I.S. requires models with **Vision Capability**, **Long Context**, and strict **JSON Instruction Following**.
@@ -58,11 +60,9 @@ J.A.R.V.I.S. requires models with **Vision Capability**, **Long Context**, and s
 | Model ID | Tier | Vision | JSON | Context | Status |
 | --- | --- | --- | --- | --- | --- |
 | `nvidia/nemotron-3-ultra-550b-a55b:free` | Free | ✅ | ✅ | 1M | ✅ **Working (Recommended)** |
-| `meta-llama/llama-3.3-70b-instruct:free` | Free | ✅ | ✅ | 128K | ✅ Working |
-| `openrouter/free` | Free | ✅ | Varies | Varies | ✅ Working (Auto-select) |
-| `openai/gpt-4-vision` | Paid | ✅ | ✅ | 128K | ✅ Working (Most Reliable) |
-| `claude-3-sonnet` | Paid | ❌ | ✅ | 200K | ⚠️ No Vision |
-| `llama-2-70b` | Free | ❌ | Varies | 4K | ⚠️ No Vision |
+| `google/gemini-3.6-flash` | Free / Paid | ✅ | ✅ | 1M | ✅ **Working** |
+| `google/gemini-3.5-flash-lite` | Free / Paid | ✅ | ✅ | 1M | ✅ **Working** |
+| `google/gemini-3.1-pro` | Free / Paid | ✅ | ✅ | 1M | ✅ **Working** |
 
 ---
 
