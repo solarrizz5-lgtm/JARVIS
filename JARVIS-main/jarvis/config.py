@@ -15,9 +15,20 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.dirname(BASE_DIR)
 CONFIG_FILE = os.path.join(ROOT_DIR, "jarvis_config.json")
 
-# Defaults
+# Defaults - OPENROUTER is the primary API service
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")
+
+# Default to free NVIDIA Nemotron model which supports vision and JSON
 MODEL_NAME = "nvidia/nemotron-3-ultra-550b-a55b:free"
+
+# IMPORTANT: Supported models that work with JARVIS:
+# Vision + JSON Support (Recommended):
+#   - "nvidia/nemotron-3-ultra-550b-a55b:free" (recommended, free)
+#   - "nvidia/nemotron-3.5-lightning:free"
+#   - "meta-llama/llama-3.3-70b-instruct:free"
+# 
+# Vision Only (may not support JSON mode):
+#   - "openrouter/free" (auto-selects best free model)
 
 # Load persistent settings if available
 if os.path.exists(CONFIG_FILE):
@@ -25,12 +36,16 @@ if os.path.exists(CONFIG_FILE):
         with open(CONFIG_FILE, "r") as f:
             data = json.load(f)
             if data.get("openrouter_api_key") or data.get("api_key"):
-                OPENROUTER_API_KEY = data.get("openrouter_api_key") or data.get("api_key")
-                os.environ["OPENROUTER_API_KEY"] = OPENROUTER_API_KEY
+                loaded_key = data.get("openrouter_api_key") or data.get("api_key")
+                if loaded_key and len(loaded_key) > 10:  # Basic validation
+                    OPENROUTER_API_KEY = loaded_key
+                    os.environ["OPENROUTER_API_KEY"] = OPENROUTER_API_KEY
             if data.get("model_name"):
-                MODEL_NAME = data.get("model_name")
-    except Exception:
-        pass
+                loaded_model = data.get("model_name")
+                if loaded_model and isinstance(loaded_model, str):
+                    MODEL_NAME = loaded_model
+    except Exception as e:
+        print(f"[WARNING] Error loading config file: {e}")
 
 # ============================================================
 # OPENROUTER & AI CONFIGURATION
@@ -77,3 +92,4 @@ os.makedirs(LOGS_DIR, exist_ok=True)
 
 AGENT_RUNNING = True
 IS_SPEAKING = False
+DEBUG_MODE = os.getenv("JARVIS_DEBUG", "false").lower() == "true"

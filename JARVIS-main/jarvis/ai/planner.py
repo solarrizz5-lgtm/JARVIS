@@ -66,7 +66,8 @@ CRITICAL RULES:
     
     payload = {
         "messages": messages,
-        "response_format": {"type": "json_object"}
+        # Note: response_format may not be supported by all vision models
+        # The client will handle this based on model capabilities
     }
     
     try:
@@ -177,7 +178,6 @@ Return JSON:
     messages = context_window + [{"role": "user", "content": classification_prompt}]
     payload = {
         "messages": messages,
-        "response_format": {"type": "json_object"}
     }
 
     try:
