@@ -17,7 +17,6 @@ CONFIG_FILE = os.path.join(ROOT_DIR, "jarvis_config.json")
 
 # Defaults
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 MODEL_NAME = "nvidia/nemotron-3-ultra-550b-a55b:free"
 
 # Load persistent settings if available
@@ -28,9 +27,6 @@ if os.path.exists(CONFIG_FILE):
             if data.get("openrouter_api_key") or data.get("api_key"):
                 OPENROUTER_API_KEY = data.get("openrouter_api_key") or data.get("api_key")
                 os.environ["OPENROUTER_API_KEY"] = OPENROUTER_API_KEY
-            if data.get("gemini_api_key"):
-                GEMINI_API_KEY = data.get("gemini_api_key")
-                os.environ["GEMINI_API_KEY"] = GEMINI_API_KEY
             if data.get("model_name"):
                 MODEL_NAME = data.get("model_name")
     except Exception:
@@ -39,8 +35,7 @@ if os.path.exists(CONFIG_FILE):
 # ============================================================
 # OPENROUTER & AI CONFIGURATION
 # ============================================================
-OPENROURTER_BASE_URL = "https://openrouter.ai/api/v1"
-GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta"
+OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 
 # ============================================================
 # VOICE & AUDIO SETTINGS

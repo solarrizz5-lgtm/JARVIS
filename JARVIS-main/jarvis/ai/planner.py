@@ -1,7 +1,7 @@
 import json
 import time
 from jarvis import config
-from jarvis.ai.client import call_gemini_api
+from jarvis.ai.client import call_openrouter_api
 from jarvis.ai.vision import capture_screen_b64
 from jarvis.ai.memory import AgentMemory
 from jarvis.voice.tts import speak
@@ -15,9 +15,12 @@ def parse_decision(raw_response: str) -> dict:
         raise ValueError("Empty model response received.")
         
     clean = raw_response.strip()
-    if clean.startswith("```json"): clean = clean[7:]
-    elif clean.startswith("```"): clean = clean[3:]
-    if clean.endswith("```"): clean = clean[:-3]
+    if clean.startswith("```json"):
+        clean = clean[7:]
+    elif clean.startswith("```"):
+        clean = clean[3:]
+    if clean.endswith("```):
+        clean = clean[:-3]
     
     decision = json.loads(clean.strip())
     if "action" not in decision:
@@ -26,15 +29,14 @@ def parse_decision(raw_response: str) -> dict:
 
 def get_next_action(goal: str, screen_b64: str, step_number: int) -> str:
     """Prompt the vision model for the single next UI action via OpenRouter chat completions."""
-    prompt = f"""
-You are an autonomous GUI control agent operating like JARVIS.
+    prompt = f"""You are an autonomous GUI control agent operating like JARVIS.
 MISSION: {goal}
 CURRENT STEP: {step_number}
 
 CRITICAL RULES:
 1. Choose exactly one next action based on the screenshot.
 2. Ensure x and y coordinates are percentages (5-95) relative to the screen dimensions.
-3. Include a "speak" field ONLY when you want JARVIS to voice something aloud to the user (e.g., announcing status, confirming progress, or stating completion). If silence is preferred for this step, omit or leave "speak" empty.
+3. Include a "speak" field ONLY when you want JARVIS to voice something aloud to the user (e.g., announcing status, confirming progress, or stating completion). If silence is preferred for this step, use an empty string for the "speak" field.
 4. Return ONLY raw, valid JSON matching one of these schemas:
 
 {{"action":"click","x":50,"y":50,"speak":"Optional spoken text","reason":"Internal logic explanation"}}
@@ -67,8 +69,19 @@ CRITICAL RULES:
         "response_format": {"type": "json_object"}
     }
     
-    data = call_gemini_api(payload)
-    return data["choices"][0]["message"]["content"]
+    try:
+        data = call_openrouter_api(payload)
+        if not data or "choices" not in data or not data["choices"]:
+            raise ValueError("Invalid API response structure: missing choices array")
+        
+        choice = data["choices"][0]
+        if "message" not in choice or "content" not in choice["message"]:
+            raise ValueError("Invalid API response structure: missing message content")
+        
+        return choice["message"]["content"]
+    except Exception as e:
+        log_error(f"Failed to get next action from AI: {e}")
+        raise
 
 def run_agent(goal: str):
     """Executes the multi-step vision-action loop with dynamic model-driven speech."""
@@ -153,8 +166,7 @@ def handle_user_command(command: str):
     memory.add_turn("user", command)
     context_window = memory.get_context()
 
-    classification_prompt = f"""
-Recent Context: {json.dumps(context_window)}
+    classification_prompt = f"""Recent Context: {json.dumps(context_window)}
 Current User Command: "{command}"
 
 Classify command: Is it a conversational question, or a desktop GUI task?
@@ -169,8 +181,14 @@ Return JSON:
     }
 
     try:
-        data = call_gemini_api(payload)
-        res_text = data["choices"][0]["message"]["content"]
+        data = call_openrouter_api(payload)
+        if not data or "choices" not in data or not data["choices"]:
+            raise ValueError("Invalid API response structure")
+        
+        res_text = data["choices"][0].get("message", {}).get("content", "")
+        if not res_text:
+            raise ValueError("Empty response content from API")
+        
         parsed = json.loads(res_text)
 
         if parsed.get("type") == "chat":

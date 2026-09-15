@@ -6,6 +6,7 @@ from jarvis.utils.logger import log_error
 
 # Queue to handle speech requests sequentially without blocking the agent loop
 _tts_queue = queue.Queue()
+_tts_lock = threading.Lock()
 
 def _tts_worker():
     """Background worker using Windows SAPI via PowerShell to ensure reliable speech output without lockups."""
@@ -14,7 +15,9 @@ def _tts_worker():
         if text is None:
             break
         
-        config.IS_SPEAKING = True
+        with _tts_lock:
+            config.IS_SPEAKING = True
+        
         try:
             safe_text = text.replace('"', '`"').replace("'", "''")
             
@@ -32,7 +35,7 @@ def _tts_worker():
         except Exception as error:
             log_error(f"TTS Worker execution error: {error}")
         finally:
-            if _tts_queue.empty():
+            with _tts_lock:
                 config.IS_SPEAKING = False
             _tts_queue.task_done()
 
@@ -48,4 +51,5 @@ def stop_speech():
     """Clears all pending speech tasks from the queue and resets the speaking lock."""
     with _tts_queue.mutex:
         _tts_queue.queue.clear()
-    config.IS_SPEAKING = False
+    with _tts_lock:
+        config.IS_SPEAKING = False

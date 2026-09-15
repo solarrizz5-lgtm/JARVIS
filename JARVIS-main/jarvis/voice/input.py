@@ -10,6 +10,12 @@ def listen_and_transcribe(timeout_seconds: float = None) -> str:
     """
     Records audio from the default microphone using sounddevice and 
     transcribes it using Google Speech Recognition.
+    
+    Args:
+        timeout_seconds: Duration to listen in seconds (defaults to LISTEN_DURATION config)
+        
+    Returns:
+        Transcribed text string, or empty string on silence/error
     """
     # Prevent listening while Jarvis is speaking to avoid feedback loops
     if getattr(config, "IS_SPEAKING", False):

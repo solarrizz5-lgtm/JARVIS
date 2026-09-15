@@ -8,8 +8,21 @@ def call_openrouter_api(payload_or_messages, max_retries: int = 4) -> dict:
     """
     Sends requests to OpenRouter using a single primary model without triggering
     OpenRouter's multi-model fallback array limit (max 3 items).
+    
+    Args:
+        payload_or_messages: Request payload or list of messages
+        max_retries: Maximum number of retry attempts
+        
+    Returns:
+        Response JSON dict with standardized OpenAI-compatible format
+        
+    Raises:
+        Exception: If max retries exceeded or API returns error
     """
     api_key = getattr(config, "OPENROUTER_API_KEY", "") or os.getenv("OPENROUTER_API_KEY", "")
+    if not api_key:
+        raise ValueError("OPENROUTER_API_KEY not configured")
+    
     base_url = getattr(config, "OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
     url = f"{base_url}/chat/completions"
     
@@ -98,8 +111,21 @@ def call_openrouter_api(payload_or_messages, max_retries: int = 4) -> dict:
 def call_gemini_api(payload_or_messages, max_retries: int = 4) -> dict:
     """
     Direct handler for Google Gemini API when MODEL_NAME is set to a Gemini model.
+    
+    Args:
+        payload_or_messages: Request payload or list of messages
+        max_retries: Maximum number of retry attempts
+        
+    Returns:
+        Response dict in OpenAI-compatible format for consistency
+        
+    Raises:
+        Exception: If max retries exceeded or API returns error
     """
     api_key = getattr(config, "GEMINI_API_KEY", "") or os.getenv("GEMINI_API_KEY", "")
+    if not api_key:
+        raise ValueError("GEMINI_API_KEY not configured")
+    
     model_name = getattr(config, "MODEL_NAME", "gemini-2.5-flash")
     clean_model_name = model_name.split("/")[-1] if "/" in model_name else model_name
     
@@ -142,6 +168,7 @@ def call_gemini_api(payload_or_messages, max_retries: int = 4) -> dict:
         try:
             response = requests.post(url, headers=headers, json=payload, timeout=45)
             if response.status_code == 429:
+                log_info(f"Gemini Rate Limit (429). Retrying in {backoff_delay}s...")
                 time.sleep(backoff_delay)
                 backoff_delay *= 2
                 continue
