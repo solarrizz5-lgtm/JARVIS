@@ -1,7 +1,7 @@
 import json
 import time
 from jarvis import config
-from jarvis.ai.client import call_openrouter_api
+from jarvis.ai.client import call_api, detect_api_type
 from jarvis.ai.vision import capture_screen_b64
 from jarvis.ai.memory import AgentMemory
 from jarvis.voice.tts import speak
@@ -28,7 +28,7 @@ def parse_decision(raw_response: str) -> dict:
     return decision
 
 def get_next_action(goal: str, screen_b64: str, step_number: int) -> str:
-    """Prompt the vision model for the single next UI action via OpenRouter chat completions."""
+    """Prompt the vision model for the single next UI action."""
     prompt = f"""You are an autonomous GUI control agent operating like JARVIS.
 MISSION: {goal}
 CURRENT STEP: {step_number}
@@ -64,14 +64,10 @@ CRITICAL RULES:
         }
     ]
     
-    payload = {
-        "messages": messages,
-        # Note: response_format may not be supported by all vision models
-        # The client will handle this based on model capabilities
-    }
+    payload = {"messages": messages}
     
     try:
-        data = call_openrouter_api(payload)
+        data = call_api(payload)
         if not data or "choices" not in data or not data["choices"]:
             raise ValueError("Invalid API response structure: missing choices array")
         
@@ -176,12 +172,10 @@ Return JSON:
 {{"type": "automation", "mission": "Detailed task description"}}
 """
     messages = context_window + [{"role": "user", "content": classification_prompt}]
-    payload = {
-        "messages": messages,
-    }
+    payload = {"messages": messages}
 
     try:
-        data = call_openrouter_api(payload)
+        data = call_api(payload)
         if not data or "choices" not in data or not data["choices"]:
             raise ValueError("Invalid API response structure")
         

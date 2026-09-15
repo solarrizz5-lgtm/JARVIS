@@ -15,31 +15,61 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.dirname(BASE_DIR)
 CONFIG_FILE = os.path.join(ROOT_DIR, "jarvis_config.json")
 
-# Defaults - OPENROUTER is the primary API service
+# ============================================================
+# API KEYS - Support TWO separate APIs
+# ============================================================
+# 1. OPENROUTER_API_KEY - For OpenRouter free models
+#    Get from: https://openrouter.ai
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")
 
-# Default to free NVIDIA Nemotron model which supports vision and JSON
+# 2. GEMINI_API_KEY - For Google AI Studio (Gemini) free models
+#    Get from: https://aistudio.google.com (no credit card needed)
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+
+# ============================================================
+# MODEL SELECTION
+# ============================================================
+# IMPORTANT: Choose ONE model from the FREE TIER ONLY list below
+#
+# FREE TIER MODELS (No payment required, with rate limits):
+#
+# OPENROUTER MODELS:
+#   "nvidia/nemotron-3-ultra-550b-a55b:free"  (550B, unlimited requests, vision, JSON)
+#   "meta-llama/llama-3.3-70b-instruct:free"   (70B, unlimited requests, vision, JSON)
+#
+# GOOGLE GEMINI MODELS (via AI Studio):
+#   "gemini-3.6-flash"        (20 requests/day, vision, fast)
+#   "gemini-3.5-flash"        (20 requests/day, vision, balanced)
+#   "gemini-3.5-flash-lite"   (500 requests/day, vision, cheaper)
+#
+# DEFAULT: Using OpenRouter's free Nemotron model
 MODEL_NAME = "nvidia/nemotron-3-ultra-550b-a55b:free"
 
-# IMPORTANT: Supported models that work with JARVIS:
-# Vision + JSON Support (Recommended):
-#   - "nvidia/nemotron-3-ultra-550b-a55b:free" (recommended, free)
-#   - "nvidia/nemotron-3.5-lightning:free"
-#   - "meta-llama/llama-3.3-70b-instruct:free"
-# 
-# Vision Only (may not support JSON mode):
-#   - "openrouter/free" (auto-selects best free model)
+# Free tier quotas info:
+# OpenRouter free tier: No daily limit, but 20 req/min rate limit
+# Gemini free tier: Varies by model (20-500 req/day), resets at midnight PT
 
-# Load persistent settings if available
+# Load persistent settings from config file if available
 if os.path.exists(CONFIG_FILE):
     try:
         with open(CONFIG_FILE, "r") as f:
             data = json.load(f)
+            
+            # Load OpenRouter API key
             if data.get("openrouter_api_key") or data.get("api_key"):
                 loaded_key = data.get("openrouter_api_key") or data.get("api_key")
-                if loaded_key and len(loaded_key) > 10:  # Basic validation
+                if loaded_key and len(loaded_key) > 10:
                     OPENROUTER_API_KEY = loaded_key
                     os.environ["OPENROUTER_API_KEY"] = OPENROUTER_API_KEY
+            
+            # Load Gemini API key (SEPARATE from OpenRouter)
+            if data.get("gemini_api_key"):
+                loaded_key = data.get("gemini_api_key")
+                if loaded_key and len(loaded_key) > 10:
+                    GEMINI_API_KEY = loaded_key
+                    os.environ["GEMINI_API_KEY"] = GEMINI_API_KEY
+            
+            # Load model name
             if data.get("model_name"):
                 loaded_model = data.get("model_name")
                 if loaded_model and isinstance(loaded_model, str):
@@ -48,9 +78,10 @@ if os.path.exists(CONFIG_FILE):
         print(f"[WARNING] Error loading config file: {e}")
 
 # ============================================================
-# OPENROUTER & AI CONFIGURATION
+# API ENDPOINTS
 # ============================================================
 OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
+GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta"
 
 # ============================================================
 # VOICE & AUDIO SETTINGS
