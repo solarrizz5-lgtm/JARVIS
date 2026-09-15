@@ -1,0 +1,6 @@
+# Ignore configuration & secrets
+jarvis_config.json
+.env
+
+# Ignore logs
+logs/*.log
