@@ -57,12 +57,12 @@ Here is the updated section formatted to match your requested layout exactly:
 
 J.A.R.V.I.S. requires models with **Vision Capability**, **Long Context**, and strict **JSON Instruction Following**.
 
-| Model ID | Tier | Vision | JSON | Context | Status |
-| --- | --- | --- | --- | --- | --- |
-| `nvidia/nemotron-3-ultra-550b-a55b:free` | Free | ✅ | ✅ | 1M | ✅ **Working (Recommended)** |
-| `google/gemini-3.6-flash` | Free / Paid | ✅ | ✅ | 1M | ✅ **Working** |
-| `google/gemini-3.5-flash-lite` | Free / Paid | ✅ | ✅ | 1M | ✅ **Working** |
-| `google/gemini-3.1-pro` | Free / Paid | ✅ | ✅ | 1M | ✅ **Working** |
+| Model ID | Tier | Vision | JSON | Context | Status | Tokens |
+| --- | --- | --- | --- | --- | --- | --- |
+| `nvidia/nemotron-3-ultra-550b-a55b:free` | Free | ✅ | ✅ | 1M | ✅ **Working** | No Token Usage |
+| `google/gemini-3.6-flash` | Free / Paid | ✅ | ✅ | 1M | ✅ **Working (Recommended)** | Token Usage Medium |
+| `google/gemini-3.5-flash-lite` | Free / Paid | ✅ | ✅ | 1M | ✅ **Working (Recommended)** | Token Usage Very Low |
+| `google/gemini-3.1-pro` | Free / Paid | ✅ | ✅ | 1M | ✅ **Working** | Token Usage Very High |
 
 ---
 
